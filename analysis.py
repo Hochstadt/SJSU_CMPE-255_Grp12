@@ -18,16 +18,20 @@ from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import normalize
 from sklearn.preprocessing import StandardScaler
+import zipfile
 
 """A pretty straightforward way to dynamically load the data per session is to actually just download and unzip the dataset from its source."""
 
 # Download PEMS-SF zip file into temp directory
-!mkdir temp
-urllib.request.urlretrieve('https://archive.ics.uci.edu/ml/machine-learning-databases/00204/PEMS-SF.zip', 'temp/PEMS-SF.zip')
+#!mkdir temp
+urllib.request.urlretrieve('https://archive.ics.uci.edu/ml/machine-learning-databases/00204/PEMS-SF.zip', 'PEMS-SF.zip')
+
+with zipfile.ZipFile("PEMS-SF.zip","r") as zip_ref:
+    zip_ref.extractall("PEMS-SF/")
 
 # Unzip data content to PEMS-SF and remove temp directory
-!unzip -u temp/PEMS-SF.zip -d PEMS-SF
-!rm -r temp
+#!unzip -u temp/PEMS-SF.zip -d PEMS-SF
+#!rm -r temp
 
 """The code below reads in the traffic sensor data from the file into a numpy array. 
 
@@ -41,7 +45,7 @@ To construct the 2-D data array `X`, the array is initialized to the size of the
 def read_file(train_test='train', return_meta_data=False):
     """Read input data file and parse into 2-D numpy array"""
     print('Reading input data...')
-    with open(r'//content/PEMS-SF/PEMS_'+train_test) as f:
+    with open(r'PEMS-SF/PEMS_'+train_test) as f:
         content = [line[1:-2].split(';') for line in list(f)]
     
     num_days = len(content)
@@ -66,7 +70,7 @@ def read_file(train_test='train', return_meta_data=False):
 def read_file_3d(train_test='train'):
     """Read input data file and parse into 3-D numpy array"""
     print('Reading input data...')
-    with open(r'//content/PEMS-SF/PEMS_'+train_test) as f:
+    with open(r'PEMS-SF/PEMS_'+train_test) as f:
         content = [line[1:-2].split(';') for line in list(f)]
     
     num_days = len(content)
@@ -86,7 +90,7 @@ def read_file_3d(train_test='train'):
     return X
 
 def read_labels(train_test='train'):
-    with open(r'//content/PEMS-SF/PEMS_'+train_test+'labels') as f:
+    with open(r'PEMS-SF/PEMS_'+train_test+'labels') as f:
         content = [int(x) for x in f.read()[1:-2].split(' ')]
     return content
 
