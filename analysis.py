@@ -241,7 +241,7 @@ def plot_bad_histogram(input, day_labels, day_to_plot, dt=6, idx=0, show_outlier
 
     fig, ax = plt.subplots(figsize=(18,10))
     if step == True:
-        plt.hist(x, bins=bins, histtype='step')
+        plt.hist(x, bins=int(bins), histtype='step')
     else:
         plt.hist(x, bins=bins)
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.05, top=0.9,
@@ -258,7 +258,7 @@ def plot_single_sensor_data(input, sensor_idx=0):
     bins = round((x.max() - x.min())/bin_width)
 
     fig, ax = plt.subplots(figsize=(5,5))
-    plt.hist(x, bins=bins, histtype='step')
+    plt.hist(x, bins=int(bins), histtype='step')
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.05, top=0.9,
                    hspace=0.4, wspace=0.3)
     fig.suptitle(f'Sensor {sensor_idx}', fontsize=20)
