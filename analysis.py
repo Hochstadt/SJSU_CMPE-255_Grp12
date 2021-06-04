@@ -20,12 +20,14 @@ from sklearn.preprocessing import normalize
 from sklearn.preprocessing import StandardScaler
 import zipfile
 
-"""A pretty straightforward way to dynamically load the data per session is to actually just download and unzip the dataset from its source."""
+# A pretty straightforward way to dynamically load the data per session 
+# is to actually just download and unzip the dataset from its source.
 
 # Download PEMS-SF zip file into temp directory
+print('Grabbing data...')
 #!mkdir temp
 urllib.request.urlretrieve('https://archive.ics.uci.edu/ml/machine-learning-databases/00204/PEMS-SF.zip', 'PEMS-SF.zip')
-
+print('Unzipping...')
 with zipfile.ZipFile("PEMS-SF.zip","r") as zip_ref:
     zip_ref.extractall("PEMS-SF/")
 
@@ -33,18 +35,30 @@ with zipfile.ZipFile("PEMS-SF.zip","r") as zip_ref:
 #!unzip -u temp/PEMS-SF.zip -d PEMS-SF
 #!rm -r temp
 
-"""The code below reads in the traffic sensor data from the file into a numpy array. 
+# The code below reads in the traffic sensor data from the file into a numpy array. 
 
-The input data is formatted such that for each day, there is a matrix starting with `[` and ending with `]\n`. The matrix for any given day has 963 rows, one for each traffic sensor, delimited by `;`. Each row contains 144 space-delimited elements, the 24-hour time series of 10-minute data.
+# The input data is formatted such that for each day, there is a matrix starting with `[` 
+# and ending with `]\n`. The matrix for any given day has 963 rows, one for each traffic sensor, 
+# delimited by `;`. Each row contains 144 space-delimited elements, the 24-hour time series of 
+# 10-minute data.
 
-To read in the data, the characters that define the start and end of each day-matrix (`[` and `]\n`) are accounted for by slicing them off each line via `line[1:-2]`. Then, each matrix (at this point a `str`) is then split on `;` to yeild a list of strings, each string representing the space-delimited time series of data for a particular traffic sensor on a particular day. The end result stored in `content` is a list of lists of strings, where each list represents a day, and each element of the day list is a string of space-delimited time series data of a single traffic sensor.
+# To read in the data, the characters that define the start and end of each day-matrix 
+# (`[` and `]\n`) are accounted for by slicing them off each line via `line[1:-2]`. 
+# Then, each matrix (at this point a `str`) is then split on `;` to yeild a list of strings, 
+# each string representing the space-delimited time series of data for a particular traffic 
+# sensor on a particular day. The end result stored in `content` is a list of lists of strings, 
+# where each list represents a day, and each element of the day list is a string of space-delimited 
+# time series data of a single traffic sensor.
 
-To construct the 2-D data array `X`, the array is initialized to the size of the data set to save processing time (each row is a day, each column is a single data point of a single sensor). The result is a data structure with of size `n` x `m`, where `n` is the number of days in the input file and `m` is the total dimensionality of the dataset (963 sensors * 144 samples per day).
-"""
+# To construct the 2-D data array `X`, the array is initialized to the size of the data set to save 
+# processing time (each row is a day, each column is a single data point of a single sensor). 
+# The result is a data structure with of size `n` x `m`, where `n` is the number of days in the input 
+# file and `m` is the total dimensionality of the dataset (963 sensors * 144 samples per day).
+
 
 def read_file(train_test='train', return_meta_data=False):
     """Read input data file and parse into 2-D numpy array"""
-    print('Reading input data...')
+    print(f'\nReading {train_test} data...')
     with open(r'PEMS-SF/PEMS_'+train_test) as f:
         content = [line[1:-2].split(';') for line in list(f)]
     
@@ -69,7 +83,7 @@ def read_file(train_test='train', return_meta_data=False):
   
 def read_file_3d(train_test='train'):
     """Read input data file and parse into 3-D numpy array"""
-    print('Reading input data...')
+    print(f'\nReading {train_test} data...')
     with open(r'PEMS-SF/PEMS_'+train_test) as f:
         content = [line[1:-2].split(';') for line in list(f)]
     
@@ -125,7 +139,7 @@ def convert_2D_to_3D(data, n_days, n_sensors, points_per_day, mode='2D_3D_Standa
 labels = read_labels()
 test_X = read_file('test')
 test_labels = read_labels('test')
-print('Data has', X.shape[0], 'rows and', X.shape[1], 'columns.')
+print('\nData has', X.shape[0], 'rows and', X.shape[1], 'columns.')
 print('Test data has', test_X.shape[0], 'rows and', test_X.shape[1], 'columns.')
 
 train_3D = read_file_3d()
@@ -139,13 +153,13 @@ num_days_test     = test_3D.shape[0]
 num_sensors_test  = test_3D.shape[1] # We already know this will be the same as the training set
 pnts_per_day_test = test_3D.shape[2] # We already know this will be the same as the training set
 
-print('Data has', num_days, 'days and', num_sensors, 'sensors, with', pnts_per_day, 'data points for each sensor for any single day')
+print('\nData has', num_days, 'days and', num_sensors, 'sensors, with', pnts_per_day, 'data points for each sensor for any single day')
 print('Test data has', num_days_test, 'days and', num_sensors_test, 'sensors, with', pnts_per_day_test, 'data points for each sensor for any single day')
 
 DAY    = 35
 SENSOR = 41
 TIME   = 95 # 3:50 PM = 15 hrs + 50 minutes past midnight => 15*6 + 5 = 95
-print(f'Day {DAY}, Sensor #{SENSOR}, {TIME*10} minutes past midnight: {train_3D[DAY][SENSOR][TIME]} occupancy rate')
+print(f'\nDay {DAY}, Sensor #{SENSOR}, {TIME*10} minutes past midnight: {train_3D[DAY][SENSOR][TIME]} occupancy rate')
 
 # Bi-directional dict just to keep track a little easier
 DAYS_str_to_label = {
@@ -291,28 +305,29 @@ def plot_all_sensor_data(input, day_labels, num_sensors):
         ax.hist(x, histtype='step')
         ax.set_title(f'Sensor {i}')
 
+print('\nCreating plots...')
 # for day in DAYS_label_to_str:
 #     boxplot_day(train_3D, labels, day)
 plot_bad_histogram(train_3D, labels, DAYS_str_to_label['Sunday'], step=True)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], average_flatten='flatten', show_outliers=False)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], average_flatten='average', show_outliers=False)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], average_flatten='flatten', show_outliers=False)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], average_flatten='average', show_outliers=False)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], average_flatten='flatten', show_outliers=True)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], average_flatten='average', show_outliers=True)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], average_flatten='flatten', show_outliers=True)
-boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], average_flatten='average', show_outliers=True)
+boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], show_outliers=False)
+boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], show_outliers=False)
+boxplot_day(train_3D, labels, DAYS_str_to_label['Sunday'], show_outliers=True)
+boxplot_day(train_3D, labels, DAYS_str_to_label['Tuesday'], show_outliers=True)
 plot_single_sensor_data(train_3D, sensor_idx=777)
 #plot_all_sensor_data(train_3D, labels, num_sensors)
+print('Close plots to continue.')
+plt.show()
 
 # Sensor matrix to use PCA to reduce sensors that don't offer useful variance
 sensors_train = convert_3D_to_2D(train_3D, mode='3D_2D_Sensors')
 sensors_test  = convert_3D_to_2D(test_3D, mode='3D_2D_Sensors')
 
 # Standard scaler
+print('\nStandardizing data...')
 sensors_train_std = StandardScaler().fit_transform(sensors_train)
 sensors_test_std  = StandardScaler().fit_transform(sensors_test)
 
+print('\nRunning PCA...')
 PCA_VARIANCE = 0.90
 
 s_PCA = PCA()
@@ -347,7 +362,7 @@ train_PCAd = convert_3D_to_2D(convert_2D_to_3D(sensors_train_PCAd, num_days, num
 test_PCAd  = convert_3D_to_2D(convert_2D_to_3D(sensors_test_PCAd, num_days_test, num_sensors_PCA, pnts_per_day, mode='2D_3D_Sensors'), mode='3D_2D_Standard')
 
 # Guassian Naive Bayes performance testing
-print('Guassian Naive Bayes classifer performance testing')
+print('\nGuassian Naive Bayes classifer performance testing')
 gaussian = GaussianNB()
 model = gaussian.fit(X, labels)
 predicted_labels = model.predict(test_X)
@@ -360,6 +375,7 @@ predicted_labels = model.predict(test_PCAd)
 print(f'Accuracy after applying PCA to reduce to {num_sensors_PCA} sensors:')
 print(f'\t{sum(1 for x,y in zip(test_labels, predicted_labels) if x == y) * 100 / len(test_labels):.2f}%')
 
+print('\nkNN Classification performance testing')
 def kNN_classify(test_vect, train, labels, k):
     """Borrowed heavily from our kNN activity in class"""
     dots = test_vect.dot(train.T)  # using dot product as distance metric
@@ -419,9 +435,12 @@ plt.legend()
 plt.xlabel('k-value')
 plt.ylabel('Accuracy')
 plt.title('kNN Classication')
+print('Close plot to continue.')
+plt.show()
+
 
 # Perceptron performance testing
-print('Perceptron classifer performance testing')
+print('\nPerceptron classifer performance testing')
 model = Perceptron()
 model.fit(X, labels)
 predicted_labels = model.predict(test_X)
@@ -434,6 +453,10 @@ predicted_labels = model.predict(test_PCAd)
 print(f'Accuracy after applying PCA to reduce to {num_sensors_PCA} sensors:')
 print(f'\t{sum(1 for x,y in zip(test_labels, predicted_labels) if x == y) * 100 / len(test_labels):.2f}%')
 
+
+# Adjust this to change how many times to train the network
+attempts = 1
+print(f'\nTraining Neural Network {attempts} times. Have patience...')
 class Layer():
     """Layer object represents a single layer of a neural network.
 
@@ -587,7 +610,6 @@ class Network():
             prev_layer_errors = hidden_layer.backpropagate(prev_layer_errors)
         
 
-# Fix this tomorrow and run with the XOR training (randomized)
 def train_network(network, train_X, train_Y, train_limit=1000):
     # Initialize
     epoch = 0
@@ -626,27 +648,27 @@ def train_network(network, train_X, train_Y, train_limit=1000):
         
     #print('Training Complete!')
 
-"""The cell below runs through the XOR example."""
-
+#  Runs through the XOR example
 # Training XOR
-x = np.array([
-    [0,0],
-    [0,1],
-    [1,0],
-    [1,1]
-    ])
+# x = np.array([
+#     [0,0],
+#     [0,1],
+#     [1,0],
+#     [1,1]
+#     ])
 
-y = np.array([0,1,1,0])
+# y = np.array([0,1,1,0])
 
-network = Network(2, 1, 3, hidden_width=2, function='sigmoid', rate=0.5)
-train_network(network, x, y, train_limit=100000)
+# network = Network(2, 1, 3, hidden_width=2, function='sigmoid', rate=0.5)
+# train_network(network, x, y, train_limit=100000)
 
-# Let's see how the newly trained network does with each input value now.
-for i, input_ in enumerate(x):
-    input_ = input_.reshape(-1, 1)
-    network.predict(input_)
-    print(f'Output: {network.outputs}\tShould Be: {y[i]}')
+# # Let's see how the newly trained network does with each input value now.
+# for i, input_ in enumerate(x):
+#     input_ = input_.reshape(-1, 1)
+#     network.predict(input_)
+#     print(f'Output: {network.outputs}\tShould Be: {y[i]}')
 
+# Training network with PCA reduced data
 network = Network(train_PCAd.shape[1], 7, 5, function='sigmoid', rate=0.001)
 
 # make labels into arrays where a 1 at an index indicates that the label is index+1
@@ -656,8 +678,8 @@ for i, val in enumerate(labels):
 
 #train_network(network, X_norm, Y, train_limit=20)
 try_num = 1
-f = open(f'training_set_{try_num}.csv','w+')
-
+#f = open(f'training_set_{try_num}.csv','w+')
+print(f'Training attempt #{try_num} (limited to 500 epochs max)')
 training_results = {try_num: []}
 epochs = 1
 while True:
@@ -682,18 +704,29 @@ while True:
         if test_labels[i] == classifications[i]:
             acc += 1
     acc /= len(classifications)
-    print(f'Accuracy for {epochs} epochs: {acc*100:.2f}%')
-    f.write(f'{epochs},{acc}\n')
+    #print(f'Accuracy for {epochs} epochs: {acc*100:.2f}%')
+    #f.write(f'{epochs},{acc}\n')
     training_results[try_num].append((epochs, acc))
     epochs += 1
-    if acc < 0.12:
-        print('It broke, starting over.')
-        f.close()
+    if acc < 0.11 or epochs > 500:
+        #print('It broke, starting over.')
+        #f.close()
+        #f = open(f'training_set_{try_num}.csv','w+')
         try_num += 1
-        f = open(f'training_set_{try_num}.csv','w+')
-        training_results[try_num] = []
-        # try again, see if the gods of luck smile upon you
-        network = Network(train_PCAd.shape[1], 7, 5, function='sigmoid', rate=0.001)
-        epochs = 1
-    if try_num > 5:
-        break
+        if try_num > attempts: 
+            break
+        else:
+            # try again, see if the gods of luck smile upon you
+            network = Network(train_PCAd.shape[1], 7, 5, function='sigmoid', rate=0.001)
+            epochs = 1
+            print(f'Training attempt #{try_num}')
+            training_results[try_num] = []
+
+plt.figure(figsize=(12,8))
+for run, data in training_results.items():
+    epochs, acc = list(zip(*data))
+    plt.plot(epochs, acc, label=run)
+plt.title(f'Training Accuracy for {attempts} Training Attempts (<= 500 Epochs')
+plt.xlabel('# of Epochs')
+plt.ylabel('Accuracy')
+plt.show()
